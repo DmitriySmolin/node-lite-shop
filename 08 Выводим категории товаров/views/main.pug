@@ -1,0 +1,11 @@
+include header.pug
+
+h2 My app
+p #{foo}
+h3 #{bar}
+each good,index in goods
+    p #{good.name}
+    img(
+        src=`/img/${good.image}`
+        class="test"
+    )
