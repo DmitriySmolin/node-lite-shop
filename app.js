@@ -50,7 +50,6 @@ app.get('/cat', (req, res) => {
   // console.log(req.query.id);
   const catId = req.query.id;
 
-
   // res.render('cat', {
   //   cat: '',
   //   goods: '',
@@ -76,6 +75,18 @@ app.get('/cat', (req, res) => {
     res.render('cat', {
       cat: JSON.parse(JSON.stringify(data[0])),
       goods: JSON.parse(JSON.stringify(data[1])),
+    });
+  });
+});
+
+app.get('/goods', (req, res) => {
+  const catId = req.query.id;
+  console.log(catId);
+  con.query(`SELECT * FROM goods WHERE id=${catId}`, (err, result, field) => {
+    if (err) throw err;
+    console.log(result);
+    res.render('goods', {
+      goods: JSON.parse(JSON.stringify(result)),
     });
   });
 });

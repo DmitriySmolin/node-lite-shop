@@ -5,8 +5,11 @@ const toCurrency = (price) => {
   }).format(price);
 };
 
-document.querySelectorAll('p').forEach((node) => {
-  node.textContent = toCurrency(node.textContent);
-});
+const addClass = (selector) => {
+  document.querySelectorAll(selector).forEach((node) => {
+    node.textContent = toCurrency(node.textContent);
+  });
+};
 
-
+addClass('p.text-center');
+addClass('span.success mark');
