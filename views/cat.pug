@@ -7,8 +7,10 @@ div(class="wrap")
         div(class="container")
             div(class="row")
                 div(class="col col-md-12")
-                  h2 #{cat[0]['category']}
+                    h2 #{cat[0]['category']}
                 each val,idx in goods
-                   include card.pug
+                    include card.pug
                 div #{cat[0]['description']}
+        include nav.pug
+include footer.pug
 script(src="js/script.js")

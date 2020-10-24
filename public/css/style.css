@@ -53,3 +53,28 @@ mark{
     background: none ;
     color: #424242;
 }
+
+.site-nav{
+    width: 300px;
+    min-height: 100vh;
+    position: fixed;
+    left:-300px;
+    top:0;
+    z-index: 999999;
+    padding: 10px;
+    transition: all ease 1s;
+    color:#fff;
+}
+
+.close-button-div{
+    text-align: right;
+}
+.show-nav {
+    position: relative;
+}
+ul.category-list{
+    list-style-type: none;
+}
+ul.category-list a{
+    color:#424242;
+}

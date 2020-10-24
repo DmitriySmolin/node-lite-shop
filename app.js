@@ -21,7 +21,6 @@ let con = mysql.createPool({
 // });
 
 app.listen(3000, () => {
-  console.log('/');
   console.log('node expres work on 3000');
 });
 
@@ -88,5 +87,12 @@ app.get('/goods', (req, res) => {
     res.render('goods', {
       goods: JSON.parse(JSON.stringify(result)),
     });
+  });
+});
+
+app.post('/get-category-list', (req, res) => {
+  con.query(`SELECT id,category FROM category`, (err, result, field) => {
+    if (err) throw err;
+    res.json(result);
   });
 });
