@@ -4,6 +4,7 @@ const mysql = require('mysql');
 
 // public - папка где хранится статика
 app.use(express.static('public'));
+app.use(express.json());
 
 // задаем шаблонизатор pug
 app.set('view engine', 'pug');
@@ -70,7 +71,7 @@ app.get('/cat', (req, res) => {
   });
 
   Promise.all([cat, goods]).then((data) => {
-    console.log(data);
+    // console.log(data);
     res.render('cat', {
       cat: JSON.parse(JSON.stringify(data[0])),
       goods: JSON.parse(JSON.stringify(data[1])),
@@ -80,7 +81,7 @@ app.get('/cat', (req, res) => {
 
 app.get('/goods', (req, res) => {
   const catId = req.query.id;
-  console.log(catId);
+  // console.log(catId);
   con.query(`SELECT * FROM goods WHERE id=${catId}`, (err, result, field) => {
     if (err) throw err;
     console.log(result);
@@ -94,5 +95,17 @@ app.post('/get-category-list', (req, res) => {
   con.query(`SELECT id,category FROM category`, (err, result, field) => {
     if (err) throw err;
     res.json(result);
+  });
+});
+
+app.post('/get-goods-info', (req, res) => {
+  con.query(`SELECT id,name,cost FROM goods WHERE ID IN(${req.body.key.join(',')})`, (err, result, field) => {
+    if (err) throw err;
+    let goods = {};
+    for (let i = 0; i < result.length; i++) {
+      goods[result[i].id] = result[i];
+    }
+    // console.log(goods);
+    res.json(goods);
   });
 });

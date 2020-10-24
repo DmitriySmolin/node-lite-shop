@@ -7,7 +7,8 @@ var app = express();
 var mysql = require('mysql'); // public - папка где хранится статика
 
 
-app.use(express["static"]('public')); // задаем шаблонизатор pug
+app.use(express["static"]('public'));
+app.use(express.json()); // задаем шаблонизатор pug
 
 app.set('view engine', 'pug');
 var con = mysql.createPool({
@@ -63,7 +64,7 @@ app.get('/cat', function (req, res) {
     });
   });
   Promise.all([cat, goods]).then(function (data) {
-    console.log(data);
+    // console.log(data);
     res.render('cat', {
       cat: JSON.parse(JSON.stringify(data[0])),
       goods: JSON.parse(JSON.stringify(data[1]))
@@ -71,8 +72,8 @@ app.get('/cat', function (req, res) {
   });
 });
 app.get('/goods', function (req, res) {
-  var catId = req.query.id;
-  console.log(catId);
+  var catId = req.query.id; // console.log(catId);
+
   con.query("SELECT * FROM goods WHERE id=".concat(catId), function (err, result, field) {
     if (err) throw err;
     console.log(result);
@@ -85,5 +86,18 @@ app.post('/get-category-list', function (req, res) {
   con.query("SELECT id,category FROM category", function (err, result, field) {
     if (err) throw err;
     res.json(result);
+  });
+});
+app.post('/get-goods-info', function (req, res) {
+  con.query("SELECT id,name,cost FROM goods WHERE ID IN(".concat(req.body.key.join(','), ")"), function (err, result, field) {
+    if (err) throw err;
+    var goods = {};
+
+    for (var i = 0; i < result.length; i++) {
+      goods[result[i].id] = result[i];
+    } // console.log(goods);
+
+
+    res.json(goods);
   });
 });
