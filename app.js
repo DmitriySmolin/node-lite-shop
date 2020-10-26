@@ -99,13 +99,17 @@ app.post('/get-category-list', (req, res) => {
 });
 
 app.post('/get-goods-info', (req, res) => {
-  con.query(`SELECT id,name,cost FROM goods WHERE ID IN(${req.body.key.join(',')})`, (err, result, field) => {
-    if (err) throw err;
-    let goods = {};
-    for (let i = 0; i < result.length; i++) {
-      goods[result[i].id] = result[i];
-    }
-    // console.log(goods);
-    res.json(goods);
-  });
+  if (req.body.key.length !== 0) {
+    con.query(`SELECT id,name,cost FROM goods WHERE ID IN(${req.body.key.join(',')})`, (err, result, field) => {
+      if (err) throw err;
+      let goods = {};
+      for (let i = 0; i < result.length; i++) {
+        goods[result[i].id] = result[i];
+      }
+      // console.log(goods);
+      res.json(goods);
+    });
+  } else {
+    res.send('0');
+  }
 });

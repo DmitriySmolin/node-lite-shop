@@ -1,4 +1,4 @@
-console.log('nav.js');
+// console.log('nav.js');
 
 const closeNav = () => {
   document.querySelector('.site-nav').style.left = `${-300}px`;
@@ -12,7 +12,7 @@ document.querySelector('.close-nav').addEventListener('click', closeNav);
 document.querySelector('.show-nav').addEventListener('click', showNav);
 
 const showCategoryList = (data) => {
-  console.log(data);
+  // console.log(data);
   let out = `<ul class="category-list">
                 <li>
                     <a href="/">Main</a>
@@ -32,11 +32,11 @@ const getCategoryList = () => {
     method: 'POST',
   })
     .then((response) => {
-      console.log(response);
+      // console.log(response);
       return response.text();
     })
     .then((body) => {
-      console.log(body);
+      // console.log(body);
       showCategoryList(JSON.parse(body));
     });
 };
