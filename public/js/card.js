@@ -68,6 +68,13 @@ const showCart = (data) => {
              <tbody>`;
   let total = 0;
 
+  const toCurrency = (price) => {
+    return new Intl.NumberFormat('ru-RU', {
+      currency: 'rub',
+      style: 'currency',
+    }).format(price);
+  };
+
   Object.values(data).forEach((item, idx) => {
     total += item.cost * cart[item.id];
     out += `
@@ -78,14 +85,13 @@ const showCart = (data) => {
                 <td><i class="far fa-minus-square cart-minus" data-goods_id=${item.id}></i></td>
                 <td>${cart[item.id]}</td>
                 <td><i class="far fa-plus-square cart-plus" data-goods_id=${item.id}></i></td>
-                <td>${cart[item.id] * item.cost} ₽</td>
+                <td>${toCurrency(cart[item.id] * item.cost)} </td>
               </tr>
-      
              `;
   });
   out += `    <tr>
               <td colspan="3">Total: </td>
-              <td>${total} ₽</td>
+              <td>${toCurrency(total)}</td>
               </tr>`;
   out += `</tbody>
          </table>`;

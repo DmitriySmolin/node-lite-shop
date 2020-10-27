@@ -25,21 +25,23 @@ app.listen(3000, function () {
   console.log('node expres work on 3000');
 });
 app.get('/', function (req, res) {
-  con.query('SELECT * FROM goods', function (err, result) {
-    if (err) throw err; // console.log(result);
-
-    var goods = {};
-
-    for (var i = 0; i < result.length; i++) {
-      goods[result[i]['id']] = result[i];
-    } // console.log(goods);
-    //console.log(JSON.parse(JSON.stringify(goods)));
-
-
-    res.render('main', {
-      foo: 'hello',
-      bar: 7,
-      goods: JSON.parse(JSON.stringify(goods))
+  var goods = new Promise(function (resolve, reject) {
+    con.query("select id,name, cost, image, category \n    from (select id,name,cost,image,category, \n    if(if(@curr_category != category, @curr_category := category, '') != '', @k := 0, @k := @k + 1) \n    as ind   \n    from goods, ( select @curr_category := '' ) v ) goods where ind < 3", function (err, result) {
+      if (err) return reject(err);
+      resolve(result);
+    });
+  });
+  var catDescription = new Promise(function (resolve, reject) {
+    con.query('SELECT * FROM category', function (err, result) {
+      if (err) return reject(err);
+      resolve(result);
+    });
+  });
+  Promise.all([goods, catDescription]).then(function (data) {
+    console.log(data);
+    res.render('index', {
+      goods: JSON.parse(JSON.stringify(data[0])),
+      catDescription: JSON.parse(JSON.stringify(data[1]))
     });
   });
 });

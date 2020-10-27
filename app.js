@@ -26,22 +26,32 @@ app.listen(3000, () => {
 });
 
 app.get('/', (req, res) => {
-  con.query('SELECT * FROM goods', (err, result) => {
-    if (err) throw err;
-    // console.log(result);
+  const goods = new Promise((resolve, reject) => {
+    con.query(
+      `select id,name, cost, image, category 
+    from (select id,name,cost,image,category, 
+    if(if(@curr_category != category, @curr_category := category, '') != '', @k := 0, @k := @k + 1) 
+    as ind   
+    from goods, ( select @curr_category := '' ) v ) goods where ind < 3`,
+      (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
+      }
+    );
+  });
 
-    let goods = {};
-    for (let i = 0; i < result.length; i++) {
-      goods[result[i]['id']] = result[i];
-    }
+  const catDescription = new Promise((resolve, reject) => {
+    con.query('SELECT * FROM category', (err, result) => {
+      if (err) return reject(err);
+      resolve(result);
+    });
+  });
 
-    // console.log(goods);
-    //console.log(JSON.parse(JSON.stringify(goods)));
-
-    res.render('main', {
-      foo: 'hello',
-      bar: 7,
-      goods: JSON.parse(JSON.stringify(goods)),
+  Promise.all([goods, catDescription]).then((data) => {
+    console.log(data);
+    res.render('index', {
+      goods: JSON.parse(JSON.stringify(data[0])),
+      catDescription: JSON.parse(JSON.stringify(data[1])),
     });
   });
 });

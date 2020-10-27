@@ -67,11 +67,19 @@ var cartPlus = function cartPlus(e) {
 var showCart = function showCart(data) {
   var out = "<table class=\"table table-stripped table-cart>\"\n             <tbody>";
   var total = 0;
+
+  var toCurrency = function toCurrency(price) {
+    return new Intl.NumberFormat('ru-RU', {
+      currency: 'rub',
+      style: 'currency'
+    }).format(price);
+  };
+
   Object.values(data).forEach(function (item, idx) {
     total += item.cost * cart[item.id];
-    out += "\n              <tr>\n                <td colspan=\"4\"><a href=\"/goods?id=".concat(item.id, "\">").concat(item.name, "</a></td>\n              </tr>\n              <tr>\n                <td><i class=\"far fa-minus-square cart-minus\" data-goods_id=").concat(item.id, "></i></td>\n                <td>").concat(cart[item.id], "</td>\n                <td><i class=\"far fa-plus-square cart-plus\" data-goods_id=").concat(item.id, "></i></td>\n                <td>").concat(cart[item.id] * item.cost, " \u20BD</td>\n              </tr>\n      \n             ");
+    out += "\n              <tr>\n                <td colspan=\"4\"><a href=\"/goods?id=".concat(item.id, "\">").concat(item.name, "</a></td>\n              </tr>\n              <tr>\n                <td><i class=\"far fa-minus-square cart-minus\" data-goods_id=").concat(item.id, "></i></td>\n                <td>").concat(cart[item.id], "</td>\n                <td><i class=\"far fa-plus-square cart-plus\" data-goods_id=").concat(item.id, "></i></td>\n                <td>").concat(toCurrency(cart[item.id] * item.cost), " </td>\n              </tr>\n             ");
   });
-  out += "    <tr>\n              <td colspan=\"3\">Total: </td>\n              <td>".concat(total, " \u20BD</td>\n              </tr>");
+  out += "    <tr>\n              <td colspan=\"3\">Total: </td>\n              <td>".concat(toCurrency(total), "</td>\n              </tr>");
   out += "</tbody>\n         </table>";
   document.querySelector('#cart-nav').innerHTML = out;
   document.querySelectorAll('.cart-minus').forEach(function (el) {
