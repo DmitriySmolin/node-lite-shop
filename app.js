@@ -60,12 +60,6 @@ app.get('/cat', (req, res) => {
   // console.log(req.query.id);
   const catId = req.query.id;
 
-  // res.render('cat', {
-  //   cat: '',
-  //   goods: '',
-  //   foo: 'hello',
-  // });
-
   let cat = new Promise((resolve, reject) => {
     con.query(`SELECT * FROM category WHERE ID=${catId}`, (err, result) => {
       if (err) reject(err);
@@ -101,6 +95,10 @@ app.get('/goods', (req, res) => {
   });
 });
 
+app.get('/order', (req, res) => {
+  res.render('order');
+});
+
 app.post('/get-category-list', (req, res) => {
   con.query(`SELECT id,category FROM category`, (err, result, field) => {
     if (err) throw err;
@@ -118,6 +116,22 @@ app.post('/get-goods-info', (req, res) => {
       }
       // console.log(goods);
       res.json(goods);
+    });
+  } else {
+    res.send('0');
+  }
+});
+
+const sendMail = (data, result) => {};
+
+app.post('/finish-order', (req, res) => {
+  if (Object.keys(req.body.key).length !== 0) {
+    const key = Object.keys(req.body.key);
+    con.query(`SELECT id,name,cost FROM goods WHERE ID IN(${key.join('')})`, (err, result, field) => {
+      if (err) throw err;
+      console.log(result);
+      sendMail(req.body, result).catch(console.error());
+      res.send('1');
     });
   } else {
     res.send('0');

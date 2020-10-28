@@ -8,8 +8,10 @@ const showNav = () => {
   document.querySelector('.site-nav').style.left = '0';
 };
 
-document.querySelector('.close-nav').addEventListener('click', closeNav);
-document.querySelector('.show-nav').addEventListener('click', showNav);
+try {
+  document.querySelector('.close-nav').addEventListener('click', closeNav);
+  document.querySelector('.show-nav').addEventListener('click', showNav);
+} catch (error) {}
 
 const showCategoryList = (data) => {
   // console.log(data);
@@ -24,7 +26,10 @@ const showCategoryList = (data) => {
               </li>`;
   });
   out += `</ul>`;
-  document.getElementById('category-list').innerHTML = out;
+
+  try {
+    document.getElementById('category-list').innerHTML = out;
+  } catch (error) {}
 };
 
 const getCategoryList = () => {

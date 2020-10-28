@@ -47,12 +47,7 @@ app.get('/', function (req, res) {
 });
 app.get('/cat', function (req, res) {
   // console.log(req.query.id);
-  var catId = req.query.id; // res.render('cat', {
-  //   cat: '',
-  //   goods: '',
-  //   foo: 'hello',
-  // });
-
+  var catId = req.query.id;
   var cat = new Promise(function (resolve, reject) {
     con.query("SELECT * FROM category WHERE ID=".concat(catId), function (err, result) {
       if (err) reject(err);
@@ -84,6 +79,9 @@ app.get('/goods', function (req, res) {
     });
   });
 });
+app.get('/order', function (req, res) {
+  res.render('order');
+});
 app.post('/get-category-list', function (req, res) {
   con.query("SELECT id,category FROM category", function (err, result, field) {
     if (err) throw err;
@@ -102,6 +100,22 @@ app.post('/get-goods-info', function (req, res) {
 
 
       res.json(goods);
+    });
+  } else {
+    res.send('0');
+  }
+});
+
+var sendMail = function sendMail(data, result) {};
+
+app.post('/finish-order', function (req, res) {
+  if (Object.keys(req.body.key).length !== 0) {
+    var key = Object.keys(req.body.key);
+    con.query("SELECT id,name,cost FROM goods WHERE ID IN(".concat(key.join(''), ")"), function (err, result, field) {
+      if (err) throw err;
+      console.log(result);
+      sendMail(req.body, result)["catch"](console.error());
+      res.send('1');
     });
   } else {
     res.send('0');

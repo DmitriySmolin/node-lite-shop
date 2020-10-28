@@ -9,8 +9,10 @@ var showNav = function showNav() {
   document.querySelector('.site-nav').style.left = '0';
 };
 
-document.querySelector('.close-nav').addEventListener('click', closeNav);
-document.querySelector('.show-nav').addEventListener('click', showNav);
+try {
+  document.querySelector('.close-nav').addEventListener('click', closeNav);
+  document.querySelector('.show-nav').addEventListener('click', showNav);
+} catch (error) {}
 
 var showCategoryList = function showCategoryList(data) {
   // console.log(data);
@@ -19,7 +21,10 @@ var showCategoryList = function showCategoryList(data) {
     out += "  <li>\n                   <a href=\"/cat?id=".concat(item.id, "\">").concat(item.category, "</a>\n              </li>");
   });
   out += "</ul>";
-  document.getElementById('category-list').innerHTML = out;
+
+  try {
+    document.getElementById('category-list').innerHTML = out;
+  } catch (error) {}
 };
 
 var getCategoryList = function getCategoryList() {
