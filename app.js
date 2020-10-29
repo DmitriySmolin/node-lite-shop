@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const mysql = require('mysql');
+const nodemailer = require('nodemailer');
 
 // public - папка где хранится статика
 app.use(express.static('public'));
@@ -122,14 +123,54 @@ app.post('/get-goods-info', (req, res) => {
   }
 });
 
-const sendMail = (data, result) => {};
+const sendMail = async (data, result) => {
+  let res = `<h2>Order in lite shop</h2>`;
+  let total = 0;
+  Object.values(result).forEach((item) => {
+    res += `<p>${item.name} - ${data.key[item.id]} - ${item.cost * data.key[item.id]} RUB </p>`;
+    total += item.cost * data.key[item.id];
+  });
+  res += '<hr>';
+  res += `Total: ${total} RUB`;
+
+  res += `<hr>Phone: ${data.phone}
+          <hr>Username: ${data.username}
+          <hr>Address: ${data.address}
+          <hr>Email: ${data.email}`;
+
+  let testAccount = await nodemailer.createTestAccount();
+
+  let transporter = nodemailer.createTransport({
+    host: 'smtp.ethereal.email',
+    port: 587,
+    secure: false, // true for 465, false for other ports
+    auth: {
+      user: testAccount.user, // generated ethereal user
+      pass: testAccount.pass, // generated ethereal password
+    },
+  });
+
+  let mailOption = {
+    from: '<neox56@gmail.com>',
+    to: `honorum2000@gmail.com,${data.email}`,
+    subject: 'Lite shop order',
+    text: 'Hello world',
+    html: res,
+  };
+
+  let info = await transporter.sendMail(mailOption);
+
+  console.log('Message sent: %s', info.messageId);
+  console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+  return true;
+};
 
 app.post('/finish-order', (req, res) => {
   if (Object.keys(req.body.key).length !== 0) {
     const key = Object.keys(req.body.key);
     con.query(`SELECT id,name,cost FROM goods WHERE ID IN(${key.join('')})`, (err, result, field) => {
       if (err) throw err;
-      console.log(result);
+      // console.log(result);
       sendMail(req.body, result).catch(console.error());
       res.send('1');
     });

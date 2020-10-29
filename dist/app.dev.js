@@ -4,7 +4,9 @@ var express = require('express');
 
 var app = express();
 
-var mysql = require('mysql'); // public - папка где хранится статика
+var mysql = require('mysql');
+
+var nodemailer = require('nodemailer'); // public - папка где хранится статика
 
 
 app.use(express["static"]('public'));
@@ -106,14 +108,68 @@ app.post('/get-goods-info', function (req, res) {
   }
 });
 
-var sendMail = function sendMail(data, result) {};
+var sendMail = function sendMail(data, result) {
+  var res, total, testAccount, transporter, mailOption, info;
+  return regeneratorRuntime.async(function sendMail$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          res = "<h2>Order in lite shop</h2>";
+          total = 0;
+          Object.values(result).forEach(function (item) {
+            res += "<p>".concat(item.name, " - ").concat(data.key[item.id], " - ").concat(item.cost * data.key[item.id], " RUB </p>");
+            total += item.cost * data.key[item.id];
+          });
+          res += '<hr>';
+          res += "Total: ".concat(total, " RUB");
+          res += "<hr>Phone: ".concat(data.phone, "\n          <hr>Username: ").concat(data.username, "\n          <hr>Address: ").concat(data.address, "\n          <hr>Email: ").concat(data.email);
+          _context.next = 8;
+          return regeneratorRuntime.awrap(nodemailer.createTestAccount());
+
+        case 8:
+          testAccount = _context.sent;
+          transporter = nodemailer.createTransport({
+            host: 'smtp.ethereal.email',
+            port: 587,
+            secure: false,
+            // true for 465, false for other ports
+            auth: {
+              user: testAccount.user,
+              // generated ethereal user
+              pass: testAccount.pass // generated ethereal password
+
+            }
+          });
+          mailOption = {
+            from: '<neox56@gmail.com>',
+            to: "honorum2000@gmail.com,".concat(data.email),
+            subject: 'Lite shop order',
+            text: 'Hello world',
+            html: res
+          };
+          _context.next = 13;
+          return regeneratorRuntime.awrap(transporter.sendMail(mailOption));
+
+        case 13:
+          info = _context.sent;
+          console.log('Message sent: %s', info.messageId);
+          console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+          return _context.abrupt("return", true);
+
+        case 17:
+        case "end":
+          return _context.stop();
+      }
+    }
+  });
+};
 
 app.post('/finish-order', function (req, res) {
   if (Object.keys(req.body.key).length !== 0) {
     var key = Object.keys(req.body.key);
     con.query("SELECT id,name,cost FROM goods WHERE ID IN(".concat(key.join(''), ")"), function (err, result, field) {
-      if (err) throw err;
-      console.log(result);
+      if (err) throw err; // console.log(result);
+
       sendMail(req.body, result)["catch"](console.error());
       res.send('1');
     });
