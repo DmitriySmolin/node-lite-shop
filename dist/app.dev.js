@@ -18,7 +18,8 @@ var con = mysql.createPool({
   user: 'root',
   password: '',
   database: 'lite_shop'
-}); // con.connect((err) => {
+});
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0; // con.connect((err) => {
 //   if (err) throw err;
 //   console.log('Connected');
 // });
@@ -164,6 +165,28 @@ var sendMail = function sendMail(data, result) {
   });
 };
 
+var saveOrder = function saveOrder(data, result) {
+  //data - информация, которую ввел пользователь в форму заказа
+  //result - сведения о товаре
+  // console.log(data);
+  var sql = "INSERT INTO user_info (user_name, user_phone, user_email, address)\n         VALUES(\"".concat(data.username, "\",\"").concat(data.phone, "\",\"").concat(data.email, "\",\"").concat(data.address, "\")");
+  con.query(sql, function (err, resultQuery) {
+    if (err) throw err; // console.log('1 user info saved');
+    // console.log(result);
+    // console.log(result.insertId);
+
+    var userId = resultQuery.insertId;
+    date = new Date() / 1000;
+    Object.values(result).forEach(function (item) {
+      sql = "INSERT INTO shop_order (user_id, goods_id, goods_cost, goods_amount,total,date)\n      VALUES(\"".concat(userId, "\",\"").concat(item.id, "\",\"").concat(item.cost, "\",\"").concat(data.key[item.id], "\",\n      \"").concat(item.cost * data.key[item.id], "\",\"").concat(date, "\")");
+      con.query(sql, function (err, resultQuery) {
+        if (err) throw err;
+        console.log('1 goods saved');
+      });
+    });
+  });
+};
+
 app.post('/finish-order', function (req, res) {
   if (Object.keys(req.body.key).length !== 0) {
     var key = Object.keys(req.body.key);
@@ -171,6 +194,7 @@ app.post('/finish-order', function (req, res) {
       if (err) throw err; // console.log(result);
 
       sendMail(req.body, result)["catch"](console.error());
+      saveOrder(req.body, result);
       res.send('1');
     });
   } else {

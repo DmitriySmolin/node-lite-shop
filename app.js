@@ -17,6 +17,8 @@ let con = mysql.createPool({
   database: 'lite_shop',
 });
 
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
+
 // con.connect((err) => {
 //   if (err) throw err;
 //   console.log('Connected');
@@ -165,6 +167,34 @@ const sendMail = async (data, result) => {
   return true;
 };
 
+const saveOrder = (data, result) => {
+  //data - информация, которую ввел пользователь в форму заказа
+  //result - сведения о товаре
+  // console.log(data);
+  let sql = `INSERT INTO user_info (user_name, user_phone, user_email, address)
+         VALUES("${data.username}","${data.phone}","${data.email}","${data.address}")`;
+  con.query(sql, (err, resultQuery) => {
+    if (err) throw err;
+    // console.log('1 user info saved');
+    // console.log(result);
+    // console.log(result.insertId);
+
+    let userId = resultQuery.insertId;
+
+    date = new Date() / 1000;
+    Object.values(result).forEach((item) => {
+      sql = `INSERT INTO shop_order (user_id, goods_id, goods_cost, goods_amount,total,date)
+      VALUES("${userId}","${item.id}","${item.cost}","${data.key[item.id]}",
+      "${item.cost * data.key[item.id]}","${date}")`;
+
+      con.query(sql, (err, resultQuery) => {
+        if (err) throw err;
+        console.log('1 goods saved');
+      });
+    });
+  });
+};
+
 app.post('/finish-order', (req, res) => {
   if (Object.keys(req.body.key).length !== 0) {
     const key = Object.keys(req.body.key);
@@ -172,6 +202,7 @@ app.post('/finish-order', (req, res) => {
       if (err) throw err;
       // console.log(result);
       sendMail(req.body, result).catch(console.error());
+      saveOrder(req.body, result);
       res.send('1');
     });
   } else {
