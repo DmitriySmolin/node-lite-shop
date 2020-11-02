@@ -1,0 +1,29 @@
+h1 Admin-panel
+h2 Order-information
+table
+    tr
+    th id
+    th userId
+    th goodsId
+    th Goods Cost
+    th Goods Amount
+    th Total
+    th Date
+    th User
+    th Phone
+    th Email
+    th Adress
+        each val,idx in order
+            tr
+                td #{val['id']}
+                td #{val['user_id']}
+                td #{val['goods_id']}
+                td #{val['goods_cost']}
+                td #{val['goods_amount']}
+                td(class="total") #{val['total']}
+                td #{val[ 'human_date']}
+                td #{val[ 'user']}
+                td #{val[ 'phone']}
+                td #{val[ 'email']}
+                td #{val[ 'address']}
+script(src="js/toCurrency.js")

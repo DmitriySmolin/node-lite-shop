@@ -201,3 +201,15 @@ app.post('/finish-order', function (req, res) {
     res.send('0');
   }
 });
+app.get('/admin', function (req, res) {
+  res.render('admin', {});
+});
+app.get('/admin-order', function (req, res) {
+  con.query("SELECT \n    shop_order.id as id,\n    shop_order.user_id as user_id,\n    shop_order.goods_id as goods_id,\n    shop_order.goods_cost AS goods_cost,\n    shop_order.goods_amount AS goods_amount,\n    shop_order.total as total,\n    from_unixtime(date,\"%Y-%m-%d %h:%m\") as human_date,\n    user_info.user_name as user,\n    user_info.user_phone as phone,\n    user_info.user_email as email,\n    user_info.address as address\n    FROM \n      shop_order\n    LEFT JOIN\n      user_info\n    ON\n    shop_order.user_id = user_info.id ORDER BY date DESC", function (err, result, field) {
+    if (err) throw err;
+    console.log(result);
+    res.render('admin-order', {
+      order: JSON.parse(JSON.stringify(result))
+    });
+  });
+});
