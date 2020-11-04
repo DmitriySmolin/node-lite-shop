@@ -10,7 +10,8 @@ var nodemailer = require('nodemailer'); // public - папка где храни
 
 
 app.use(express["static"]('public'));
-app.use(express.json()); // задаем шаблонизатор pug
+app.use(express.json());
+app.use(express.urlencoded()); // задаем шаблонизатор pug
 
 app.set('view engine', 'pug');
 var con = mysql.createPool({
@@ -202,6 +203,8 @@ app.post('/finish-order', function (req, res) {
   }
 });
 app.get('/admin', function (req, res) {
+  console.log(req.body); // res.end('work');
+
   res.render('admin', {});
 });
 app.get('/admin-order', function (req, res) {
@@ -211,5 +214,31 @@ app.get('/admin-order', function (req, res) {
     res.render('admin-order', {
       order: JSON.parse(JSON.stringify(result))
     });
+  });
+});
+/*login form */
+
+app.get('/login', function (req, res) {
+  res.render('login', {});
+});
+app.post('/login', function (req, res) {
+  // console.log(req.body);
+  con.query("SELECT * FROM user WHERE login=\"".concat(req.body.login, "\" and password=\"").concat(req.body.password, "\""), function (err, result) {
+    if (err) throw err;
+
+    if (result.length === 0) {
+      console.log('error user not found');
+      res.redirect('/login');
+    } else {
+      result = JSON.parse(JSON.stringify(result));
+      res.cookie('hash', 'blabla'); // запись hash в базу данных
+
+      var userId = result[0].id;
+      var sql = "UPDATE user SET hash='blabla' WHERE id=".concat(userId);
+      con.query(sql, function (err, resultQuery) {
+        if (err) throw err;
+        res.redirect('/admin');
+      });
+    }
   });
 });

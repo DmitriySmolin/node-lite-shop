@@ -6,6 +6,7 @@ const nodemailer = require('nodemailer');
 // public - папка где хранится статика
 app.use(express.static('public'));
 app.use(express.json());
+app.use(express.urlencoded());
 
 // задаем шаблонизатор pug
 app.set('view engine', 'pug');
@@ -211,6 +212,8 @@ app.post('/finish-order', (req, res) => {
 });
 
 app.get('/admin', (req, res) => {
+  console.log(req.body);
+  // res.end('work');
   res.render('admin', {});
 });
 
@@ -242,4 +245,33 @@ app.get('/admin-order', (req, res) => {
       });
     }
   );
+});
+
+/*login form */
+app.get('/login', (req, res) => {
+  res.render('login', {});
+});
+
+app.post('/login', (req, res) => {
+  // console.log(req.body);
+  con.query(`SELECT * FROM user WHERE login="${req.body.login}" and password="${req.body.password}"`, (err, result) => {
+    if (err) throw err;
+
+    if (result.length === 0) {
+      console.log('error user not found');
+      res.redirect('/login');
+    } else {
+      result = JSON.parse(JSON.stringify(result));
+      res.cookie('hash', 'blabla');
+
+      // запись hash в базу данных
+      let userId = result[0].id;
+      let sql = `UPDATE user SET hash='blabla' WHERE id=${userId}`;
+
+      con.query(sql, (err, resultQuery) => {
+        if (err) throw err;
+        res.redirect('/admin');
+      });
+    }
+  });
 });
