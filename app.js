@@ -2,11 +2,13 @@ const express = require('express');
 const app = express();
 const mysql = require('mysql');
 const nodemailer = require('nodemailer');
-
+const cookieParser = require('cookie-parser');
+const admin = require('./admin');
 // public - папка где хранится статика
 app.use(express.static('public'));
 app.use(express.json());
 app.use(express.urlencoded());
+app.use(cookieParser());
 
 // задаем шаблонизатор pug
 app.set('view engine', 'pug');
@@ -27,6 +29,14 @@ process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
 
 app.listen(3000, () => {
   console.log('node expres work on 3000');
+});
+
+app.use(function (req, res, next) {
+  if (req.originalUrl === '/admin' || req.originalUrl === '/admin-order') {
+    admin(req, res, con, next);
+  } else {
+    next();
+  }
 });
 
 app.get('/', (req, res) => {
@@ -212,31 +222,29 @@ app.post('/finish-order', (req, res) => {
 });
 
 app.get('/admin', (req, res) => {
-  console.log(req.body);
-  // res.end('work');
   res.render('admin', {});
 });
 
 app.get('/admin-order', (req, res) => {
   con.query(
     `SELECT 
-    shop_order.id as id,
-    shop_order.user_id as user_id,
-    shop_order.goods_id as goods_id,
-    shop_order.goods_cost AS goods_cost,
-    shop_order.goods_amount AS goods_amount,
-    shop_order.total as total,
-    from_unixtime(date,"%Y-%m-%d %h:%m") as human_date,
-    user_info.user_name as user,
-    user_info.user_phone as phone,
-    user_info.user_email as email,
-    user_info.address as address
-    FROM 
-      shop_order
-    LEFT JOIN
-      user_info
-    ON
-    shop_order.user_id = user_info.id ORDER BY date DESC`,
+      shop_order.id as id,
+      shop_order.user_id as user_id,
+      shop_order.goods_id as goods_id,
+      shop_order.goods_cost AS goods_cost,
+      shop_order.goods_amount AS goods_amount,
+      shop_order.total as total,
+      from_unixtime(date,"%Y-%m-%d %h:%m") as human_date,
+      user_info.user_name as user,
+      user_info.user_phone as phone,
+      user_info.user_email as email,
+      user_info.address as address
+      FROM 
+        shop_order
+      LEFT JOIN
+        user_info
+      ON
+      shop_order.user_id = user_info.id ORDER BY date DESC`,
     (err, result, field) => {
       if (err) throw err;
       console.log(result);
@@ -253,7 +261,7 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  // console.log(req.body);
+  console.log(req.body);
   con.query(`SELECT * FROM user WHERE login="${req.body.login}" and password="${req.body.password}"`, (err, result) => {
     if (err) throw err;
 
@@ -262,16 +270,20 @@ app.post('/login', (req, res) => {
       res.redirect('/login');
     } else {
       result = JSON.parse(JSON.stringify(result));
-      res.cookie('hash', 'blabla');
+      let userId = result[0].id;
+      let hash = makeHash(32);
+      res.cookie('hash', hash);
+      res.cookie('id', userId);
 
       // запись hash в базу данных
-      let userId = result[0].id;
-      let sql = `UPDATE user SET hash='blabla' WHERE id=${userId}`;
-
-      con.query(sql, (err, resultQuery) => {
+      con.query(`UPDATE user SET hash='${hash}' WHERE id=${userId}`, (err, resultQuery) => {
         if (err) throw err;
         res.redirect('/admin');
       });
     }
   });
 });
+
+function makeHash(length) {
+  return Math.random().toString(length).substring(2, 15) + Math.random().toString(length).substring(2, 15);
+}

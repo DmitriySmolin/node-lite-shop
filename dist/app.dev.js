@@ -6,12 +6,17 @@ var app = express();
 
 var mysql = require('mysql');
 
-var nodemailer = require('nodemailer'); // public - папка где хранится статика
+var nodemailer = require('nodemailer');
+
+var cookieParser = require('cookie-parser');
+
+var admin = require('./admin'); // public - папка где хранится статика
 
 
 app.use(express["static"]('public'));
 app.use(express.json());
-app.use(express.urlencoded()); // задаем шаблонизатор pug
+app.use(express.urlencoded());
+app.use(cookieParser()); // задаем шаблонизатор pug
 
 app.set('view engine', 'pug');
 var con = mysql.createPool({
@@ -27,6 +32,13 @@ process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0; // con.connect((err) => {
 
 app.listen(3000, function () {
   console.log('node expres work on 3000');
+});
+app.use(function (req, res, next) {
+  if (req.originalUrl === '/admin' || req.originalUrl === '/admin-order') {
+    admin(req, res, con, next);
+  } else {
+    next();
+  }
 });
 app.get('/', function (req, res) {
   var goods = new Promise(function (resolve, reject) {
@@ -203,12 +215,10 @@ app.post('/finish-order', function (req, res) {
   }
 });
 app.get('/admin', function (req, res) {
-  console.log(req.body); // res.end('work');
-
   res.render('admin', {});
 });
 app.get('/admin-order', function (req, res) {
-  con.query("SELECT \n    shop_order.id as id,\n    shop_order.user_id as user_id,\n    shop_order.goods_id as goods_id,\n    shop_order.goods_cost AS goods_cost,\n    shop_order.goods_amount AS goods_amount,\n    shop_order.total as total,\n    from_unixtime(date,\"%Y-%m-%d %h:%m\") as human_date,\n    user_info.user_name as user,\n    user_info.user_phone as phone,\n    user_info.user_email as email,\n    user_info.address as address\n    FROM \n      shop_order\n    LEFT JOIN\n      user_info\n    ON\n    shop_order.user_id = user_info.id ORDER BY date DESC", function (err, result, field) {
+  con.query("SELECT \n      shop_order.id as id,\n      shop_order.user_id as user_id,\n      shop_order.goods_id as goods_id,\n      shop_order.goods_cost AS goods_cost,\n      shop_order.goods_amount AS goods_amount,\n      shop_order.total as total,\n      from_unixtime(date,\"%Y-%m-%d %h:%m\") as human_date,\n      user_info.user_name as user,\n      user_info.user_phone as phone,\n      user_info.user_email as email,\n      user_info.address as address\n      FROM \n        shop_order\n      LEFT JOIN\n        user_info\n      ON\n      shop_order.user_id = user_info.id ORDER BY date DESC", function (err, result, field) {
     if (err) throw err;
     console.log(result);
     res.render('admin-order', {
@@ -222,7 +232,7 @@ app.get('/login', function (req, res) {
   res.render('login', {});
 });
 app.post('/login', function (req, res) {
-  // console.log(req.body);
+  console.log(req.body);
   con.query("SELECT * FROM user WHERE login=\"".concat(req.body.login, "\" and password=\"").concat(req.body.password, "\""), function (err, result) {
     if (err) throw err;
 
@@ -231,14 +241,19 @@ app.post('/login', function (req, res) {
       res.redirect('/login');
     } else {
       result = JSON.parse(JSON.stringify(result));
-      res.cookie('hash', 'blabla'); // запись hash в базу данных
-
       var userId = result[0].id;
-      var sql = "UPDATE user SET hash='blabla' WHERE id=".concat(userId);
-      con.query(sql, function (err, resultQuery) {
+      var hash = makeHash(32);
+      res.cookie('hash', hash);
+      res.cookie('id', userId); // запись hash в базу данных
+
+      con.query("UPDATE user SET hash='".concat(hash, "' WHERE id=").concat(userId), function (err, resultQuery) {
         if (err) throw err;
         res.redirect('/admin');
       });
     }
   });
 });
+
+function makeHash(length) {
+  return Math.random().toString(length).substring(2, 15) + Math.random().toString(length).substring(2, 15);
+}
