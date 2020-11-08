@@ -42,11 +42,11 @@ app.use(function (req, res, next) {
 app.get('/', (req, res) => {
   const goods = new Promise((resolve, reject) => {
     con.query(
-      `select id,name, cost, image, category 
-    from (select id,name,cost,image,category, 
-    if(if(@curr_category != category, @curr_category := category, '') != '', @k := 0, @k := @k + 1) 
-    as ind   
-    from goods, ( select @curr_category := '' ) v ) goods where ind < 3`,
+      `SELECT id,slug,name, cost, image, category 
+       FROM (select id,slug,name,cost,image,category, 
+       if(if(@curr_category != category, @curr_category := category, '') != '', @k := 0, @k := @k + 1) 
+       as ind   
+       FROM goods, ( SELECT @curr_category := '' ) v ) goods WHERE ind < 3`,
       (err, result) => {
         if (err) return reject(err);
         resolve(result);
@@ -97,16 +97,18 @@ app.get('/cat', (req, res) => {
   });
 });
 
-app.get('/goods', (req, res) => {
-  const catId = req.query.id;
+app.get('/goods/*', (req, res) => {
+  // console.log(req.params);
+  // const catId = req.query.id;
   // console.log(catId);
-  con.query(`SELECT * FROM goods WHERE id=${catId}`, (err, result, field) => {
+  con.query(`SELECT * FROM goods WHERE slug="${req.params['0']}"`, (err, result, field) => {
     if (err) throw err;
     console.log(result);
     res.render('goods', {
       goods: JSON.parse(JSON.stringify(result)),
     });
   });
+  // res.end('ok')
 });
 
 app.get('/order', (req, res) => {
@@ -121,8 +123,10 @@ app.post('/get-category-list', (req, res) => {
 });
 
 app.post('/get-goods-info', (req, res) => {
+  // console.log(req.body);
   if (req.body.key.length !== 0) {
     con.query(`SELECT id,name,cost FROM goods WHERE ID IN(${req.body.key.join(',')})`, (err, result, field) => {
+      // console.log(result);
       if (err) throw err;
       let goods = {};
       for (let i = 0; i < result.length; i++) {
@@ -247,7 +251,7 @@ app.get('/admin-order', (req, res) => {
       shop_order.user_id = user_info.id ORDER BY date DESC`,
     (err, result, field) => {
       if (err) throw err;
-      console.log(result);
+      // console.log(result);
       res.render('admin-order', {
         order: JSON.parse(JSON.stringify(result)),
       });
@@ -261,7 +265,7 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
   con.query(`SELECT * FROM user WHERE login="${req.body.login}" and password="${req.body.password}"`, (err, result) => {
     if (err) throw err;
 

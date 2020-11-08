@@ -42,7 +42,7 @@ app.use(function (req, res, next) {
 });
 app.get('/', function (req, res) {
   var goods = new Promise(function (resolve, reject) {
-    con.query("select id,name, cost, image, category \n    from (select id,name,cost,image,category, \n    if(if(@curr_category != category, @curr_category := category, '') != '', @k := 0, @k := @k + 1) \n    as ind   \n    from goods, ( select @curr_category := '' ) v ) goods where ind < 3", function (err, result) {
+    con.query("SELECT id,slug,name, cost, image, category \n       FROM (select id,slug,name,cost,image,category, \n       if(if(@curr_category != category, @curr_category := category, '') != '', @k := 0, @k := @k + 1) \n       as ind   \n       FROM goods, ( SELECT @curr_category := '' ) v ) goods WHERE ind < 3", function (err, result) {
       if (err) return reject(err);
       resolve(result);
     });
@@ -84,16 +84,17 @@ app.get('/cat', function (req, res) {
     });
   });
 });
-app.get('/goods', function (req, res) {
-  var catId = req.query.id; // console.log(catId);
-
-  con.query("SELECT * FROM goods WHERE id=".concat(catId), function (err, result, field) {
+app.get('/goods/*', function (req, res) {
+  // console.log(req.params);
+  // const catId = req.query.id;
+  // console.log(catId);
+  con.query("SELECT * FROM goods WHERE slug=\"".concat(req.params['0'], "\""), function (err, result, field) {
     if (err) throw err;
     console.log(result);
     res.render('goods', {
       goods: JSON.parse(JSON.stringify(result))
     });
-  });
+  }); // res.end('ok')
 });
 app.get('/order', function (req, res) {
   res.render('order');
@@ -105,8 +106,10 @@ app.post('/get-category-list', function (req, res) {
   });
 });
 app.post('/get-goods-info', function (req, res) {
+  // console.log(req.body);
   if (req.body.key.length !== 0) {
     con.query("SELECT id,name,cost FROM goods WHERE ID IN(".concat(req.body.key.join(','), ")"), function (err, result, field) {
+      // console.log(result);
       if (err) throw err;
       var goods = {};
 
@@ -219,8 +222,8 @@ app.get('/admin', function (req, res) {
 });
 app.get('/admin-order', function (req, res) {
   con.query("SELECT \n      shop_order.id as id,\n      shop_order.user_id as user_id,\n      shop_order.goods_id as goods_id,\n      shop_order.goods_cost AS goods_cost,\n      shop_order.goods_amount AS goods_amount,\n      shop_order.total as total,\n      from_unixtime(date,\"%Y-%m-%d %h:%m\") as human_date,\n      user_info.user_name as user,\n      user_info.user_phone as phone,\n      user_info.user_email as email,\n      user_info.address as address\n      FROM \n        shop_order\n      LEFT JOIN\n        user_info\n      ON\n      shop_order.user_id = user_info.id ORDER BY date DESC", function (err, result, field) {
-    if (err) throw err;
-    console.log(result);
+    if (err) throw err; // console.log(result);
+
     res.render('admin-order', {
       order: JSON.parse(JSON.stringify(result))
     });
@@ -232,7 +235,7 @@ app.get('/login', function (req, res) {
   res.render('login', {});
 });
 app.post('/login', function (req, res) {
-  console.log(req.body);
+  // console.log(req.body);
   con.query("SELECT * FROM user WHERE login=\"".concat(req.body.login, "\" and password=\"").concat(req.body.password, "\""), function (err, result) {
     if (err) throw err;
 

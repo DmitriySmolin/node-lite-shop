@@ -9,7 +9,7 @@ div(class="wrap")
                 div(class="col col-md-12")
                     h2(class="panel") #{goods[0]['name']}
                 div(class="col col-md-4")
-                    img(src=`img/${goods[0]['image']}`
+                    img(src=`/img/${goods[0]['image']}`
                         class="goods-big-image")
                 div(class="col col-md-8")
                     p #{goods[0]['description']}
@@ -17,9 +17,9 @@ div(class="wrap")
                     span(class="success")  Цена: 
                         mark #{goods[0]['cost']}
                     button(
-                        class=" button-success add-to-cart"
+                        class="button-success add-to-cart"
                         data-goods_id = goods[0]['id']
                         ) add to cart
         include nav.pug
 include footer.pug
-script(src="js/toCurrency.js")
+script(src="/js/toCurrency.js")

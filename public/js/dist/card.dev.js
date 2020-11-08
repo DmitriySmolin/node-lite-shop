@@ -26,7 +26,7 @@ var updateLocalStorageCart = function updateLocalStorageCart() {
 
 var ajaxGetGoodsInfo = function ajaxGetGoodsInfo() {
   updateLocalStorageCart();
-  fetch('get-goods-info', {
+  fetch('/get-goods-info', {
     method: 'POST',
     body: JSON.stringify({
       key: Object.keys(cart)
@@ -77,7 +77,7 @@ var showCart = function showCart(data) {
 
   Object.values(data).forEach(function (item, idx) {
     total += item.cost * cart[item.id];
-    out += "\n              <tr>\n                <td colspan=\"4\"><a href=\"/goods?id=".concat(item.id, "\">").concat(item.name, "</a></td>\n              </tr>\n              <tr>\n                <td><i class=\"far fa-minus-square cart-minus\" data-goods_id=").concat(item.id, "></i></td>\n                <td>").concat(cart[item.id], "</td>\n                <td><i class=\"far fa-plus-square cart-plus\" data-goods_id=").concat(item.id, "></i></td>\n                <td>").concat(toCurrency(cart[item.id] * item.cost), " </td>\n              </tr>\n             ");
+    out += "\n              <tr>\n                <td colspan=\"4\"><a href=\"/goods/".concat(item.id, "\">").concat(item.name, "</a></td>\n              </tr>\n              <tr>\n                <td><i class=\"far fa-minus-square cart-minus\"  data-goods_id=").concat(item.id, "></i></td>\n                <td>").concat(cart[item.id], "</td>\n                <td><i class=\"far fa-plus-square cart-plus\" data-goods_id=").concat(item.id, "></i></td>\n                <td>").concat(toCurrency(cart[item.id] * item.cost), " </td>\n              </tr>\n             ");
   });
   out += "    <tr>\n              <td colspan=\"3\">Total: </td>\n              <td>".concat(toCurrency(total), "</td>\n              </tr>");
   out += "</tbody>\n         </table>";

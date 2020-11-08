@@ -23,7 +23,7 @@ const updateLocalStorageCart = () => {
 
 const ajaxGetGoodsInfo = () => {
   updateLocalStorageCart();
-  fetch('get-goods-info', {
+  fetch('/get-goods-info', {
     method: 'POST',
     body: JSON.stringify({ key: Object.keys(cart) }),
     headers: {
@@ -79,10 +79,10 @@ const showCart = (data) => {
     total += item.cost * cart[item.id];
     out += `
               <tr>
-                <td colspan="4"><a href="/goods?id=${item.id}">${item.name}</a></td>
+                <td colspan="4"><a href="/goods/${item.id}">${item.name}</a></td>
               </tr>
               <tr>
-                <td><i class="far fa-minus-square cart-minus" data-goods_id=${item.id}></i></td>
+                <td><i class="far fa-minus-square cart-minus"  data-goods_id=${item.id}></i></td>
                 <td>${cart[item.id]}</td>
                 <td><i class="far fa-plus-square cart-plus" data-goods_id=${item.id}></i></td>
                 <td>${toCurrency(cart[item.id] * item.cost)} </td>

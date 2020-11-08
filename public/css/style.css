@@ -82,3 +82,7 @@ ul.category-list a{
 .site-nav a{
     color: #424242;
 }
+
+.panel{
+    box-shadow:none;
+}
