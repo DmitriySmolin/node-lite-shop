@@ -90,11 +90,18 @@ app.get('/goods/*', function (req, res) {
   // console.log(catId);
   con.query("SELECT * FROM goods WHERE slug=\"".concat(req.params['0'], "\""), function (err, result, field) {
     if (err) throw err;
-    console.log(result);
-    res.render('goods', {
-      goods: JSON.parse(JSON.stringify(result))
+    result = JSON.parse(JSON.stringify(result));
+    var goodsId = result[0]['id'];
+    con.query("SELECT * FROM images WHERE goods_id=".concat(goodsId), function (err, goodsImages, field) {
+      if (err) throw err;
+      console.log(goodsImages);
+      goodsImages = JSON.parse(JSON.stringify(goodsImages));
+      res.render('goods', {
+        goods: result,
+        goods_images: goodsImages
+      });
     });
-  }); // res.end('ok')
+  });
 });
 app.get('/order', function (req, res) {
   res.render('order');
